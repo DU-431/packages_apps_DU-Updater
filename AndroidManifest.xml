@@ -28,8 +28,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".SettingsActivity" 
-            android:theme="@android:style/Theme.Holo.Dialog" />
+            android:name="com.dirtyunicorns.updater.SettingsActivity" />
         <receiver android:name=".autostart">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />

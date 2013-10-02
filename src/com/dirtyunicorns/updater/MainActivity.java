@@ -205,6 +205,7 @@ public class MainActivity extends Activity {
 
 
     public void OpenSettings(MenuItem item) {
+    	Log.i("DU MENU", "Settings Clicked");
 		Intent i = new Intent(this, SettingsActivity.class);
 		startActivity(i);
 	}
@@ -360,6 +361,10 @@ public class MainActivity extends Activity {
 	        notificationManager.notify(HELLO_ID, notification);
 	        super.onProgressUpdate(progress);
 	    }
+	}
+	
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		GetInfo();
 	}
     
 }
