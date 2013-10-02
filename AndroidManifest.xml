@@ -30,6 +30,13 @@
         <activity
             android:name=".SettingsActivity" 
             android:theme="@android:style/Theme.Holo.Dialog" />
+        <receiver android:name=".autostart">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+        <service android:enabled="true" android:name=".ManifestService" />
+        <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
     </application>
 
 </manifest>

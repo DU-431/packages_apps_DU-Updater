@@ -2,42 +2,39 @@ package com.dirtyunicorns.updater;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.net.URL;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-import org.xml.sax.InputSource;
-import org.xml.sax.XMLReader;
 import android.annotation.SuppressLint;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
-import android.appwidget.AppWidgetManager;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.Build;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Handler;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.TaskStackBuilder;
 import android.util.Log;
-import android.widget.RemoteViews;
 
 public class ManifestService extends Service{
 
 	private static Timer timer = new Timer();
-	private Context ctx;
 	private Handler mHandler = new Handler();
 	private long UPDATE_TIMER = 2000;
+	private Context ctx;
+	private String devV, devBM, servV, servBM;
+    private ServerComm sc;
+    private String data;
 	@Override
 	public void onCreate() {
 		super.onCreate();
 		ctx = this;
 		Log.v("DU", "Creating Service");
-		
 	}
 	
 	@Override
@@ -100,7 +97,16 @@ public class ManifestService extends Service{
 						public void run() {
 			        		
 			        		try {
-			                    //update code will go here
+			        			if (IsOnline()) {
+			        	    		try{
+			        	            	data = sc.getLatest();
+			        	            }
+			        	            catch (Exception e) {
+			        	            	
+			        	            }
+			        	    		SplitStrings();
+			        	    		GetInfo();
+			        	    	}
 			                   
 				            } catch (Exception e) {
 				            	
@@ -113,19 +119,98 @@ public class ManifestService extends Service{
 		}
 	}
 	
-	public String GetBuildNum() {
+	public void SplitStrings(){
+    	String[] splitJSON = data.split(",");
+    	servV = splitJSON[1];
+    	servBM = splitJSON[2];
+    }
+    
+    public void GetInfo()
+    {
+    	devBM = GetBuildNum();
+    	devV = GetVersNum();
+    	int dB, sB;
+    	double sV, dV;
+    	sV = Double.valueOf(servV);
+    	dV = Double.valueOf(devV);
+    	dB = Integer.valueOf(devBM);
+    	sB = Integer.valueOf(servBM);
+    	if (sV > dV)
+    	{
+    		//Notify
+    	}
+    	else
+    	{
+    		if (sB > dB){
+        		//Notify
+    		}
+    	}
+        
+    }
+    
+    public String GetBuildNum() {
 		String line = "";
 		try {
-		 Process ifc = Runtime.getRuntime().exec("getprop ro.du.buildnum");
-		 BufferedReader bis = new BufferedReader(new InputStreamReader(ifc.getInputStream()));
-		 line = bis.readLine();
-		 ifc.destroy();
+			Process ifc = Runtime.getRuntime().exec("getprop ro.du.buildnum");
+			BufferedReader bis = new BufferedReader(new InputStreamReader(ifc.getInputStream()));
+			line = bis.readLine();
+			ifc.destroy();
 		} catch (java.io.IOException e) {
+			line = e.getMessage();
 		}
 		
 		return line;
 	}
+    
+    public String GetVersNum() {
+		String line = "";
+		try {
+			Process ifc = Runtime.getRuntime().exec("getprop ro.romstats.version");
+			BufferedReader bis = new BufferedReader(new InputStreamReader(ifc.getInputStream()));
+			line = bis.readLine();
+			ifc.destroy();
+		} catch (java.io.IOException e) {
+			line = e.getMessage();
+		}
+		
+		return line;
+	}
+    
+    public boolean IsOnline()
+	{
+		boolean online = false;
+		
+		ConnectivityManager conMgr = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
+		NetworkInfo[] activeNet = conMgr.getAllNetworkInfo();
+		for (NetworkInfo adapter : activeNet)
+		{
+			if (adapter.isConnected()){
+				Log.v("DU", "Device is online, getting info");
+				online = true;
+				break;
+			}
+		}
+		
+		return online;
+	}
 	
+    public void NotifyUpdate()
+    {
+    	Intent i = new Intent(ctx, MainActivity.class);
+    	NotificationManager noficationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+    	NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(ctx)
+    		.setSmallIcon(R.drawable.ic_launcher)
+    		.setContentTitle("DU Update")
+    		.setContentText("Version: " + servV + " Build Number: " + servBM);
+    	
+    	TaskStackBuilder stackBuilder = TaskStackBuilder.create(ctx);
+    	stackBuilder.addParentStack(MainActivity.class);
+    	stackBuilder.addNextIntent(i);
+    	PendingIntent pendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+    	mBuilder.setContentIntent(pendingIntent);
+    	noficationManager.notify(0,mBuilder.build());
+    }
+    
 	public IBinder onBind(Intent intent)
 	{
 		return null;

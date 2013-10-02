@@ -88,6 +88,7 @@ public class MainActivity extends Activity {
             	all = sc.getAll();
             	ListAdapter adapter = new ListAdapter(getApplicationContext(),R.layout.list_row, all);
                 list.setAdapter(adapter);
+                startService(new Intent(getApplicationContext() ,ManifestService.class));
             }
             catch (Exception e) {
             	
