@@ -51,6 +51,8 @@ public class MainActivity extends Activity {
     private NotificationManager notificationManager;
     private Notification notification;
     private Intent notificationIntent;
+    private double dV;
+    private String error = "";
 	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,28 +78,56 @@ public class MainActivity extends Activity {
         UpdateAvail = (TextView) findViewById(R.id.UpdateAvail);
         btnDLatest = (ImageButton) findViewById(R.id.btnDownloadLatest);
         list = (ListView) findViewById(android.R.id.list);
-        model = Build.MODEL;
+    	btnDLatest.setVisibility(View.GONE);
+        model = Build.PRODUCT;
+        
+        System.out.println(model);
+        
         sc = new ServerComm(model);
         sc.start();
-        //Set Text Fields
         
-        //Check if online
+        //Set Text Fields
+        devBM = GetBuildNum();
+    	devV = GetVersNum();
+    	dV = Double.valueOf(devV);
+    	deviceBuildNum.setText("Device Build Number: " + devBM);
+    	deviceModel.setText("Device: " + model);
+        deviceVers.setText("Device Version: " +  devV);
+        
+        
         if (IsOnline()) {
-    		try{
-            	data = sc.getLatest();
-            	all = sc.getAll();
-            	ListAdapter adapter = new ListAdapter(getApplicationContext(),R.layout.list_row, all);
-                list.setAdapter(adapter);
-                startService(new Intent(getApplicationContext() ,ManifestService.class));
-            }
-            catch (Exception e) {
-            	
-            }
-    		SplitStrings();
-    		GetInfo();
-    	}
-        else
-        {
+            		try{
+            			
+                    	data = sc.getLatest();
+                    	System.out.println(data);
+                    	if (data != "Device not found in the database")
+	                    {
+	                    	all = sc.getAll();
+	                    	ListAdapter adapter = new ListAdapter(getApplicationContext(),R.layout.list_row, all);
+	                        list.setAdapter(adapter);
+	                        startService(new Intent(getApplicationContext() ,ManifestService.class));
+	                        SplitStrings();
+	                		GetInfo();
+                    	}
+                    	else
+                    	{
+                    		Toast.makeText(this, "This is not an officially supported device", Toast.LENGTH_LONG).show();
+                    	}
+                    }
+                    catch (Exception e) {
+                    	e.printStackTrace();
+                    	Toast.makeText(this, "this is gay", Toast.LENGTH_LONG).show();
+                    }
+            		
+            	}
+                else
+                {
+                	btnDLatest.setVisibility(View.GONE);
+                	error = "offline";
+                }
+        	
+        //Check if online
+        if (error == "offline") {
         	Toast.makeText(this, "Not online, Please try again later",Toast.LENGTH_LONG).show();
         }
         
@@ -123,12 +153,10 @@ public class MainActivity extends Activity {
     
     public void GetInfo()
     {
-    	devBM = GetBuildNum();
-    	devV = GetVersNum();
+    	
     	int dB, sB;
-    	double sV, dV;
+    	double sV;
     	sV = Double.valueOf(servV);
-    	dV = Double.valueOf(devV);
     	dB = Integer.valueOf(devBM);
     	sB = Integer.valueOf(servBM);
     	if (sV > dV)
@@ -148,9 +176,12 @@ public class MainActivity extends Activity {
         		UpdateAvail.setTextColor(Color.RED);
     		}
     	}
-    	deviceBuildNum.setText("Device Build Number: " + devBM);
-    	deviceModel.setText("Device: " + model);
-        deviceVers.setText("Device Version: " +  devV);
+    	
+    	if (UpdateAvail.getText() == "An Update is Available") {
+
+        	btnDLatest.setVisibility(View.VISIBLE);
+    	}
+    	
         serverVers.setText("Server Version: " +  servV);
         serverBuildNum.setText("Server Build Number: " + servBM);
         serverBuildDate.setText("Latest Build Date: " + servD);

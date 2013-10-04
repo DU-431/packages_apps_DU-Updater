@@ -69,39 +69,53 @@ public class ServerComm extends Thread{
         			                sb.append(line + "\n");
         			        }
         			        is.close();
-        			 
-        			        result=sb.toString();
+        			        if (!sb.toString().contains("codename"))
+        			        {
+        			        	result = "Device not found in the database";
+        			        }
+        			        else {
+        			        	result=sb.toString();
+        			        }
         			}catch(Exception e){
         			        Log.e("log_tag", "Error converting result "+e.toString());
         			}
-        			 
-        			//parse json data
-        			try{
-        			        JSONArray jArray = new JSONArray(result);
-        			        for(int i=0;i<jArray.length();i++){
-        			                JSONObject json_data = jArray.getJSONObject(i);
-        			                
-        			                JSONVals.add(json_data.getString("codename")+
-        			                        ","+json_data.getDouble("vers")+
-        			                        ","+json_data.getInt("buildnum")+
-        			                        ","+json_data.getString("link") +
-        			                        ","+json_data.get("uploaded"));
-        			                Dates.add(json_data.get("uploaded").toString());
-        			                
-        			        }
-        			}catch(JSONException e){
-        			        Log.e("log_tag", "Error parsing data "+e.toString());
+        			
+        			
+        			if (result != "Device not found in the database") {
+        				
+        			
+	        			//parse json data
+	        			try{
+	        			        JSONArray jArray = new JSONArray(result);
+	        			        for(int i=0;i<jArray.length();i++){
+	        			                JSONObject json_data = jArray.getJSONObject(i);
+	        			                
+	        			                JSONVals.add(json_data.getString("codename")+
+	        			                        ","+json_data.getDouble("vers")+
+	        			                        ","+json_data.getInt("buildnum")+
+	        			                        ","+json_data.getString("link") +
+	        			                        ","+json_data.get("uploaded"));
+	        			                Dates.add(json_data.get("uploaded").toString());
+	        			                
+	        			        }
+	        			}catch(JSONException e){
+	        			        Log.e("log_tag", "Error parsing data "+e.toString());
+	        			}
+	                   String latest = Collections.max(Dates);
+	                   
+	                   for (String vals : JSONVals) {
+	                	   if (vals.contains(latest)) {
+	                		   result = vals;
+	                	   }
+	                   }
+	                   latch.countDown();
         			}
-                   String latest = Collections.max(Dates);
-                   
-                   for (String vals : JSONVals) {
-                	   if (vals.contains(latest)) {
-                		   result = vals;
-                	   }
-                   }
-                   latch.countDown();
+        			else
+        			{
+        				latch.countDown();
+        			}
 	            } catch (Exception e) {
-	            	
+	            	e.printStackTrace();
 	            }
         	}
         };
@@ -109,10 +123,10 @@ public class ServerComm extends Thread{
         try {
 			latch.await();
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
+        System.out.println(result);
 		return result;
 	}
 	

@@ -28,7 +28,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="com.dirtyunicorns.updater.SettingsActivity" />
+            android:name="SettingsActivity" />
         <receiver android:name=".autostart">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
