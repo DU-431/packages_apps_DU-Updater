@@ -49,7 +49,7 @@ public class ServerComm extends Thread{
         			
         			try {
         				HttpClient httpClient = new DefaultHttpClient();
-        				HttpPost httpPost = new HttpPost("http://dirtrom.com/du/vers.php");
+        				HttpPost httpPost = new HttpPost("http://dirtyunicorns.com/dusite/vers.php");
         				httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
         				HttpResponse response = httpClient.execute(httpPost);
         				HttpEntity entity = response.getEntity();

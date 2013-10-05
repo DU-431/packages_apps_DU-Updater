@@ -79,7 +79,7 @@ public class MainActivity extends Activity {
         btnDLatest = (ImageButton) findViewById(R.id.btnDownloadLatest);
         list = (ListView) findViewById(android.R.id.list);
     	btnDLatest.setVisibility(View.GONE);
-        model = Build.PRODUCT;
+        model = GetProduct();
         
         System.out.println(model);
         
@@ -112,11 +112,13 @@ public class MainActivity extends Activity {
                     	else
                     	{
                     		Toast.makeText(this, "This is not an officially supported device", Toast.LENGTH_LONG).show();
+
+                    		UpdateAvail.setText("This is not an officially supported device");
+                    		UpdateAvail.setTextColor(Color.RED);
                     	}
                     }
                     catch (Exception e) {
                     	e.printStackTrace();
-                    	Toast.makeText(this, "this is gay", Toast.LENGTH_LONG).show();
                     }
             		
             	}
@@ -172,7 +174,7 @@ public class MainActivity extends Activity {
     		}
     		else
     		{
-        		UpdateAvail.setText("No Updates Available");
+        		UpdateAvail.setText("You are on the most current version");
         		UpdateAvail.setTextColor(Color.RED);
     		}
     	}
@@ -215,6 +217,20 @@ public class MainActivity extends Activity {
 		
 		return line;
 	}
+    
+    public String GetProduct() {
+    	String line = "";
+		try {
+			Process ifc = Runtime.getRuntime().exec("getprop ro.build.product");
+			BufferedReader bis = new BufferedReader(new InputStreamReader(ifc.getInputStream()));
+			line = bis.readLine();
+			ifc.destroy();
+		} catch (java.io.IOException e) {
+			line = e.getMessage();
+		}
+		
+		return line;
+    }
     
     public boolean IsOnline()
 	{
