@@ -34,7 +34,6 @@ public class ManifestService extends Service{
 	public void onCreate() {
 		super.onCreate();
 		ctx = this;
-		Log.v("DU", "Creating Service");
 	}
 	
 	@Override
@@ -45,7 +44,6 @@ public class ManifestService extends Service{
 	
 	public void startService() {
 
-		Log.v("DU", "Starting Service");
 		UPDATE_TIMER = TimeUnit.MILLISECONDS.convert(1, TimeUnit.DAYS);
 		SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
 		boolean oneday, twoday, threeday, fiveday, week;
@@ -185,7 +183,6 @@ public class ManifestService extends Service{
 		for (NetworkInfo adapter : activeNet)
 		{
 			if (adapter.isConnected()){
-				Log.v("DU", "Device is online, getting info");
 				online = true;
 				break;
 			}

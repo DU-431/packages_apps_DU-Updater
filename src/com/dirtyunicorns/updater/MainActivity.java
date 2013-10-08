@@ -11,11 +11,13 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.app.Activity;
+import android.app.DownloadManager;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -41,7 +43,7 @@ public class MainActivity extends Activity {
 	private TextView deviceModel, deviceVers, deviceBuildNum, serverVers, serverBuildNum, serverBuildDate, UpdateAvail;
 	private ImageButton btnDLatest;
 	private ListView list;
-	private String devM, devV, devBM, servV, servBM, servL, servD;
+	private String devM, devV, devBM, servV, servBM, servL, servD, fileName;
     private Intent intent;
 	private SharedPreferences settings;
     private String model;
@@ -99,7 +101,6 @@ public class MainActivity extends Activity {
             		try{
             			
                     	data = sc.getLatest();
-                    	System.out.println(data);
                     	if (data != "Device not found in the database")
 	                    {
 	                    	all = sc.getAll();
@@ -136,13 +137,22 @@ public class MainActivity extends Activity {
         btnDLatest.setOnClickListener(new OnClickListener() {
         	@Override
         	public void onClick(View v){
-        		StartDownload();
+        		DownloadManager.Request request = new DownloadManager.Request(Uri.parse("http://dirtyunicorns.com/dusite/download.php?file=" + servL));
+        		request.setDescription("Downloading Dirty Unicorns");
+        		request.setTitle("DU Download");
+        		// in order for this if to run, you must use the android 3.2 to compile your app
+        		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+        		    request.allowScanningByMediaScanner();
+        		    request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+        		}
+        		
+        		request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName);
+
+        		// get download service and enqueue file
+        		DownloadManager manager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
+        		manager.enqueue(request);
         	}
         });
-    }
-    
-    public void StartDownload() {
-    	new DownloadFile().execute();
     }
     
     public void SplitStrings(){
@@ -151,6 +161,8 @@ public class MainActivity extends Activity {
     	servBM = splitJSON[2];
     	servL = splitJSON[3];
     	servD = splitJSON[4];
+    	
+    	fileName = "du_" + model + "_" + servD + ".zip";
     }
     
     public void GetInfo()
@@ -263,155 +275,4 @@ public class MainActivity extends Activity {
 		
 		return true;
 	}
-	
-	@SuppressWarnings("deprecation")
-	public class DownloadFile extends AsyncTask<String, String, String> {
-	    CharSequence contentText;
-	    Context context;
-	    CharSequence contentTitle;
-	    PendingIntent contentIntent;
-	    int HELLO_ID = 1;
-	    long time;
-	    int icon;
-	    CharSequence tickerText;
-	    File file;
-
-	    
-		public void downloadNotification(){
-	        try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-	    	String ns = Context.NOTIFICATION_SERVICE;
-	        notificationManager = (NotificationManager) getSystemService(ns);
-
-	        icon = R.drawable.ic_launcher;
-	        //the text that appears first on the status bar
-	        tickerText = "Downloading...";
-	        time = System.currentTimeMillis();
-
-	        notification = new Notification(icon, tickerText, time);
-
-	        context = getApplicationContext();
-	        //the bold font
-	        contentTitle = "DU downloading...";
-	        //the text that needs to change
-	        contentText = "0% complete";
-	        notificationIntent = new Intent(Intent.ACTION_VIEW);
-	        contentIntent = PendingIntent.getActivity(context, 0, notificationIntent, 0);
-	        
-	        
-	        notification.setLatestEventInfo(context, contentTitle, contentText, contentIntent);
-	        notificationManager.notify(HELLO_ID, notification);
-
-	    }
-
-
-	    @Override
-	    protected void onPreExecute() {
-	        //execute the status bar notification
-	        downloadNotification();
-
-	        super.onPreExecute();
-	    }
-
-	    @Override
-	    protected String doInBackground(String... url) {
-	        
-	        
-	        	Thread t = new Thread() {
-	        		public void run() {
-	        			try {
-	        				int count;
-		        			URL url2 = new URL("http://fs1.d-h.st/download/00073/1ne/multirom-20132709-v1-m7ul.zip");
-		    	            HttpURLConnection connection = (HttpURLConnection) url2.openConnection();
-		    	            connection.setRequestMethod("GET");
-		    	            //connection.setDoOutput(true);
-		    	            connection.connect();
-	
-		    	            int lengthOfFile = connection.getContentLength();
-	
-		    	            //make the stop drop rave folder
-		    	            File sdrFolder = new File(Environment.getExternalStorageDirectory() + "/DirtyUnicorns");
-		    	            boolean success = false;
-	
-		    	            if(!sdrFolder.exists()){
-		    	                success = sdrFolder.mkdir();
-		    	            }      
-		    	            if (!success) { 
-		    	                String PATH = Environment.getExternalStorageDirectory()
-		    	                        + "/DirtyUnicorns/";
-		    	                file = new File(PATH);
-		    	                file.mkdirs();
-	
-		    	            }
-		    	            else 
-		    	            {
-		    	                String PATH = Environment.getExternalStorageDirectory()
-		    	                        + "/DirtyUnicorns/";
-		    	                file = new File(PATH);
-		    	                file.mkdirs();
-		    	            }
-	
-		    	            String[] path = url2.getPath().split("/");
-		    	            String mp3 = path[path.length - 1];
-		    	            String mp31 = mp3.replace("%20", " ");
-		    	            String sdrMp3 = mp31.replace("%28", "(");
-		    	            String sdrMp31 = sdrMp3.replace("%29", ")");
-		    	            String sdrMp32 = sdrMp31.replace("%27", "'");
-	
-		    	            File outputFile = new File(file, sdrMp32);
-		    	            FileOutputStream fos = new FileOutputStream(outputFile);
-	
-		    	            InputStream input = connection.getInputStream();
-	
-		    	            byte[] data = new byte[1024];
-		    	            long total = 0;
-		    	            while ((count = input.read(data)) != -1) {
-		    	                total += count;
-		    	                publishProgress(""+(int) (total * 100 / lengthOfFile));
-		    	                fos.write(data, 0, count);
-		    	            }
-		    	            fos.close();
-		    	            input.close();
-
-	    	        } catch (IllegalArgumentException e) 
-	    	        { e.printStackTrace();
-	    	        }catch (IllegalStateException e) { 
-	    	            e.printStackTrace();
-	    	        }catch (IOException e) {
-	    	        e.printStackTrace();
-	    	        }
-	        		}
-	        	};
-	        	t.start();
-	            
-
-	        return null;
-	    }
-
-	    @Override
-	    public void onProgressUpdate(String... progress) {
-	        if (Integer.parseInt(progress[0]) == 100) {
-	        	notification.flags = Notification.FLAG_AUTO_CANCEL;
-	        	notificationIntent.setType("application/zip");
-	        }
-	        else if (Integer.parseInt(progress[0]) == 0) {
-	        	notification.flags = Notification.FLAG_AUTO_CANCEL;
-	        }
-	        else {
-	        	notification.flags |= Notification.FLAG_ONGOING_EVENT;
-	        }
-	    	contentText =  Integer.parseInt(progress[0]) + "% complete";
-	        notification.setLatestEventInfo(context, contentTitle, contentText, contentIntent);
-	        notificationManager.notify(HELLO_ID, notification);
-	        super.onProgressUpdate(progress);
-	    }
-	}
-	
-	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		GetInfo();
-	}
-    
 }

@@ -125,11 +125,8 @@ public class ServerComm extends Thread{
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-
-        System.out.println(result);
 		return result;
 	}
-	
 	
 	public String[] getAll() {
 		final CountDownLatch latch = new CountDownLatch(1);
@@ -143,7 +140,7 @@ public class ServerComm extends Thread{
         			
         			try {
         				HttpClient httpClient = new DefaultHttpClient();
-        				HttpPost httpPost = new HttpPost("http://dirtrom.com/du/vers.php");
+        				HttpPost httpPost = new HttpPost("http://dirtyunicorns.com/dusite/vers.php");
         				httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
         				HttpResponse response = httpClient.execute(httpPost);
         				HttpEntity entity = response.getEntity();
@@ -208,7 +205,6 @@ public class ServerComm extends Thread{
         try {
 			latch.await();
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
