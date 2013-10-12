@@ -155,6 +155,24 @@ public class MainActivity extends Activity {
         });
     }
     
+    public void DownloadGapps() {
+    	
+    	DownloadManager.Request request = new DownloadManager.Request(Uri.parse("http://dirtyunicorns.com/roms/gapps/gapps-jb-20130813-signed.zip"));
+		request.setDescription("Downloading GApps!");
+		request.setTitle("Downloading GApps");
+		// in order for this if to run, you must use the android 3.2 to compile your app
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+		    request.allowScanningByMediaScanner();
+		    request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+		}
+		
+		request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "latest_GApps.zip");
+
+		// get download service and enqueue file
+		DownloadManager manager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
+		manager.enqueue(request);
+    }
+    
     public void SplitStrings(){
     	String[] splitJSON = data.split(",");
     	servV = splitJSON[1];
@@ -261,9 +279,21 @@ public class MainActivity extends Activity {
 		
 		return online;
 	}
+    
+    public boolean onOptionsItemSelected(MenuItem item) {
+    	switch (item.getItemId()) {
+	    	case R.id.action_gapps:
+	    		DownloadGapps();
+	    		return true;
+	    	case R.id.action_settings:
+	    		OpenSettings();
+	    		return true;
+	    	default:
+	    		return super.onOptionsItemSelected(item);
+    	}
+    }
 
-
-    public void OpenSettings(MenuItem item) {
+    public void OpenSettings() {
     	Log.i("DU MENU", "Settings Clicked");
 		Intent i = new Intent(this, SettingsActivity.class);
 		startActivity(i);
