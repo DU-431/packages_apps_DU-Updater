@@ -9,6 +9,6 @@
         android:id="@+id/action_gapps"
         android:orderInCategory="120"
         android:showAsAction="never"
-        android:title="Download GApps!" />
+        android:title="Download GAPPS!" />
 
 </menu>

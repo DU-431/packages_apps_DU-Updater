@@ -158,8 +158,8 @@ public class MainActivity extends Activity {
     public void DownloadGapps() {
     	
     	DownloadManager.Request request = new DownloadManager.Request(Uri.parse("http://dirtyunicorns.com/roms/gapps/gapps-jb-20130813-signed.zip"));
-		request.setDescription("Downloading GApps!");
-		request.setTitle("Downloading GApps");
+		request.setDescription("Downloading GAPPS!");
+		request.setTitle("Downloading GAPPS");
 		// in order for this if to run, you must use the android 3.2 to compile your app
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
 		    request.allowScanningByMediaScanner();
